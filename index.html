@@ -255,7 +255,12 @@
     }
 
     function statusClass(status) {
-      return String(status || "").toLowerCase().replaceAll(" ", "-");
+      return ({
+        "Aberta": "aberta",
+        "Em andamento": "em-andamento",
+        "Concluída": "concluída",
+        "Cancelada": "cancelada"
+      })[status] || "";
     }
 
     function renderClients() {
@@ -303,7 +308,10 @@
     }
 
     function choices(collection, emptyLabel) {
-      return [["", emptyLabel], ...data[collection].map(item => [item.id, item.name])];
+      return [["", emptyLabel], ...data[collection].map(item => [
+        item.id,
+        collection === "vehicles" ? `${item.plate} · ${item.model}` : item.name
+      ])];
     }
 
     function showEditor(entity, existing = null) {
@@ -313,7 +321,7 @@
         suppliers: ["Fornecedor", [field("name", "Nome / empresa", "text", item.name, { required: true, full: true }), field("phone", "Telefone", "tel", item.phone), field("email", "E-mail", "email", item.email), field("document", "CNPJ / documento", "text", item.document), field("notes", "Observações", "textarea", item.notes, { full: true })]],
         catalog: ["Item do catálogo", [field("name", "Descrição", "text", item.name, { required: true, full: true }), field("type", "Tipo", "select", item.type || "Produto", { choices: [["Produto", "Produto"], ["Serviço", "Serviço"]] }), field("supplierId", "Fornecedor", "select", item.supplierId || "", { choices: choices("suppliers", "Sem fornecedor") }), field("cost", "Preço de custo (R$)", "number", item.cost ?? 0, { step: "0.01" }), field("price", "Preço de venda (R$)", "number", item.price ?? 0, { step: "0.01", required: true }), field("stock", "Estoque", "number", item.stock ?? 0, { step: "1" })]],
         vehicles: ["Veículo", [field("clientId", "Proprietário", "select", item.clientId || "", { choices: choices("clients", "Selecione o cliente"), required: true }), field("plate", "Placa", "text", item.plate, { required: true }), field("brand", "Marca", "text", item.brand), field("model", "Modelo", "text", item.model, { required: true }), field("year", "Ano", "number", item.year, { step: "1" }), field("type", "Tipo de veículo", "select", item.type || "Automóvel", { choices: [["Automóvel", "Automóvel"], ["Motocicleta", "Motocicleta"], ["Caminhão", "Caminhão"], ["Van", "Van"], ["Ônibus", "Ônibus"], ["Outro", "Outro"]] }), field("notes", "Observações", "textarea", item.notes, { full: true })]],
-        orders: ["Ordem de serviço", [field("date", "Data de entrada", "date", item.date || new Date().toISOString().slice(0, 10), { required: true }), field("status", "Status", "select", item.status || "Aberta", { choices: [["Aberta", "Aberta"], ["Em andamento", "Em andamento"], ["Concluída", "Concluída"], ["Cancelada", "Cancelada"]] }), field("clientId", "Cliente", "select", item.clientId || "", { choices: choices("clients", "Selecione o cliente"), required: true }), field("vehicleId", "Veículo", "select", item.vehicleId || "", { choices: choices("vehicles", "Selecione o veículo"), required: true }), field("complaint", "Problema relatado", "textarea", item.complaint, { full: true }), field("diagnosis", "Diagnóstico / serviço realizado", "textarea", item.diagnosis, { full: true })]]
+        orders: ["Ordem de serviço", [field("date", "Data de entrada", "date", item.date || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10), { required: true }), field("status", "Status", "select", item.status || "Aberta", { choices: [["Aberta", "Aberta"], ["Em andamento", "Em andamento"], ["Concluída", "Concluída"], ["Cancelada", "Cancelada"]] }), field("clientId", "Cliente", "select", item.clientId || "", { choices: choices("clients", "Selecione o cliente"), required: true }), field("vehicleId", "Veículo", "select", item.vehicleId || "", { choices: choices("vehicles", "Selecione o veículo"), required: true }), field("complaint", "Problema relatado", "textarea", item.complaint, { full: true }), field("diagnosis", "Diagnóstico / serviço realizado", "textarea", item.diagnosis, { full: true })]]
       }[entity];
       if (!config) return;
       if (entity === "orders" && (!data.clients.length || !data.vehicles.length)) {
@@ -322,7 +330,9 @@
       }
       orderLines = entity === "orders" ? (item.items || []).map(line => ({ ...line })) : [];
       const orderFields = entity === "orders" ? `<div class="field full"><label>Peças e serviços</label><div class="item-entry"><select id="catalog-item" aria-label="Produto ou serviço">${choices("catalog", "Selecione um item").map(([value, text]) => `<option value="${escapeHtml(value)}">${escapeHtml(text)}</option>`).join("")}</select><input id="item-quantity" type="number" min="1" value="1" aria-label="Quantidade"><button class="button" type="button" id="add-order-item">Adicionar</button></div><div id="order-lines" class="order-lines"></div></div>` : "";
-      document.querySelector("#editor-content").innerHTML = `<div class="dialog-header"><h2>${item.id ? "Editar" : "Novo"} ${config[0].toLowerCase()}</h2><button class="close" type="button" aria-label="Fechar" data-close>×</button></div><form id="record-form" data-entity="${entity}" data-id="${escapeHtml(item.id || "")}"><div class="dialog-body"><div class="form-grid">${config[1].join("")}${orderFields}</div><div class="form-actions"><button class="button" type="button" data-close>Cancelar</button><button class="button primary" type="submit">Salvar</button></div></div></form>`;
+      const title = entity === "orders" ? "ordem de serviço" : config[0].toLowerCase();
+      const article = entity === "orders" ? "Nova" : "Novo";
+      document.querySelector("#editor-content").innerHTML = `<div class="dialog-header"><h2>${item.id ? "Editar" : article} ${title}</h2><button class="close" type="button" aria-label="Fechar" data-close>×</button></div><form id="record-form" data-entity="${entity}" data-id="${escapeHtml(item.id || "")}"><div class="dialog-body"><div class="form-grid">${config[1].join("")}${orderFields}</div><div class="form-actions"><button class="button" type="button" data-close>Cancelar</button><button class="button primary" type="submit">Salvar</button></div></div></form>`;
       if (entity === "orders") {
         document.querySelector("#add-order-item").addEventListener("click", addOrderLine);
         renderOrderLines();
