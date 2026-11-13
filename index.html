@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101b2d">
+  <title>Voltz — Gestão de oficina</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #172235;
+      background: #f4f6fa;
+      font-synthesis: none;
+      --navy: #101b2d;
+      --muted: #748096;
+      --line: #e6eaf0;
+      --blue: #4263eb;
+      --surface: #fff;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; display: grid; grid-template-columns: 248px minmax(0, 1fr); }
+    aside { background: var(--navy); color: #e9eef8; padding: 28px 17px; }
+    .brand { display: flex; align-items: center; gap: 12px; padding: 0 11px 33px; }
+    .brand-mark { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; color: white; font-size: 20px; font-weight: 800; background: #4263eb; }
+    .brand strong { display: block; font-size: 17px; letter-spacing: .3px; }
+    .brand small { color: #a4afc2; font-size: 11px; }
+    .nav-label { color: #77849b; padding: 9px 12px; font-size: 10px; text-transform: uppercase; letter-spacing: 1.4px; font-weight: 700; }
+    nav { display: grid; gap: 5px; }
+    .nav-link { border: 0; color: #b7c1d2; background: transparent; padding: 11px 12px; border-radius: 9px; text-align: left; font-size: 13px; display: flex; align-items: center; gap: 12px; }
+    .nav-link:hover, .nav-link.active { background: #202d43; color: white; }
+    .nav-icon { display: inline-grid; place-items: center; width: 20px; font-size: 16px; }
+    .sidebar-note { color: #8996aa; font-size: 11px; line-height: 1.6; margin: 35px 12px 0; }
+    main { min-width: 0; }
+    header { height: 76px; background: white; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; padding: 0 34px; }
+    .header-title { font-size: 14px; color: #303b4e; font-weight: 650; }
+    .header-subtitle { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .user-badge { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: #314dbd; background: #e9edff; font-weight: 700; font-size: 12px; }
+    #content { padding: 31px 34px 48px; max-width: 1440px; margin: 0 auto; }
+    .page-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; }
+    h1 { font-size: 23px; margin: 0; letter-spacing: -.5px; }
+    .page-description { color: var(--muted); font-size: 12px; margin-top: 6px; }
+    .button { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; background: white; color: #344158; font-size: 12px; font-weight: 650; }
+    .button:hover { background: #f8f9fc; }
+    .button.primary { border-color: var(--blue); background: var(--blue); color: white; }
+    .button.primary:hover { background: #3453d1; }
+    .button.danger { color: #c14444; }
+    .button.small { padding: 6px 9px; font-size: 11px; }
+    .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; margin-bottom: 24px; }
+    .card, .panel { border: 1px solid var(--line); border-radius: 11px; background: var(--surface); }
+    .card { padding: 18px 19px; }
+    .card-label { color: var(--muted); font-size: 11px; }
+    .card-value { font-size: 25px; font-weight: 700; margin-top: 12px; letter-spacing: -.7px; }
+    .card-foot { color: #8a94a5; font-size: 10px; margin-top: 5px; }
+    .panel { overflow: hidden; }
+    .panel-heading { display: flex; justify-content: space-between; align-items: center; padding: 17px 19px; border-bottom: 1px solid var(--line); }
+    .panel-heading h2 { font-size: 14px; margin: 0; }
+    .table-tools { display: flex; align-items: center; gap: 10px; }
+    .search { width: min(250px, 42vw); border: 1px solid var(--line); border-radius: 7px; padding: 9px 11px; font-size: 11px; outline: none; }
+    .search:focus, input:focus, select:focus, textarea:focus { border-color: #8297f4; box-shadow: 0 0 0 3px #4263eb1c; outline: none; }
+    .table-wrap { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; text-align: left; white-space: nowrap; }
+    th { color: #8490a2; font-size: 10px; font-weight: 650; text-transform: uppercase; letter-spacing: .55px; background: #fbfcfe; }
+    th, td { padding: 13px 17px; border-bottom: 1px solid #edf0f4; font-size: 11px; }
+    td { color: #4c586c; }
+    td strong { color: #243147; font-size: 11px; }
+    tr:last-child td { border-bottom: 0; }
+    .actions { display: flex; gap: 6px; }
+    .status { display: inline-block; border-radius: 20px; padding: 5px 8px; font-size: 10px; font-weight: 650; background: #eef1f6; color: #58667d; }
+    .status.aberta, .status.em-andamento { color: #94640a; background: #fff4d9; }
+    .status.concluída { color: #16704c; background: #e4f6ed; }
+    .status.cancelada { color: #a43e3e; background: #ffebeb; }
+    .empty { color: #8792a3; text-align: center; padding: 36px 15px; font-size: 12px; }
+    .profit { color: #16835d; font-weight: 700; }
+    .notice { margin-top: 18px; color: #758197; font-size: 10px; line-height: 1.5; }
+    dialog { border: 0; border-radius: 12px; padding: 0; width: min(590px, calc(100vw - 28px)); max-height: 90vh; box-shadow: 0 20px 70px #101b2d38; }
+    dialog::backdrop { background: #101b2d80; }
+    .dialog-header { display: flex; justify-content: space-between; align-items: center; padding: 19px 22px; border-bottom: 1px solid var(--line); }
+    .dialog-header h2 { margin: 0; font-size: 16px; }
+    .close { border: 0; background: transparent; color: #788397; font-size: 22px; }
+    .dialog-body { padding: 20px 22px; max-height: calc(90vh - 130px); overflow-y: auto; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .field { display: grid; gap: 6px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { color: #566276; font-size: 11px; font-weight: 650; }
+    .field input, .field select, .field textarea { width: 100%; border: 1px solid #dfe4eb; border-radius: 7px; padding: 10px; background: white; color: #263248; font-size: 12px; }
+    .field textarea { min-height: 72px; resize: vertical; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 20px; }
+    .item-entry { display: grid; grid-template-columns: 1fr 85px auto; gap: 7px; margin: 8px 0 12px; }
+    .item-entry select, .item-entry input { min-width: 0; border: 1px solid #dfe4eb; border-radius: 7px; padding: 9px; font-size: 11px; }
+    .order-lines { border-top: 1px solid var(--line); padding-top: 10px; }
+    .order-line { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; color: #596579; font-size: 11px; border-bottom: 1px solid #f0f2f5; }
+    .order-total { text-align: right; padding-top: 10px; font-size: 12px; font-weight: 700; }
+    #toast { position: fixed; right: 24px; bottom: 24px; padding: 12px 16px; border-radius: 8px; background: #172235; color: white; font-size: 12px; box-shadow: 0 8px 24px #101b2d30; opacity: 0; transform: translateY(8px); transition: .2s; pointer-events: none; }
+    #toast.show { opacity: 1; transform: translateY(0); }
+    @media (max-width: 920px) {
+      .app { grid-template-columns: 205px minmax(0, 1fr); }
+      aside { padding-left: 11px; padding-right: 11px; }
+      header { padding: 0 22px; }
+      #content { padding: 25px 22px 40px; }
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 650px) {
+      .app { display: block; }
+      aside { padding: 12px; }
+      .brand { padding: 0 6px 12px; }
+      .nav-label, .sidebar-note { display: none; }
+      nav { display: flex; overflow-x: auto; }
+      .nav-link { flex: 0 0 auto; padding: 9px 10px; font-size: 11px; }
+      .nav-icon { display: none; }
+      header { height: 60px; padding: 0 16px; }
+      #content { padding: 21px 14px 32px; }
+      .page-heading { align-items: flex-start; }
+      h1 { font-size: 20px; }
+      .cards { gap: 9px; }
+      .card { padding: 14px; }
+      .card-value { font-size: 21px; }
+      .panel-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
+      .table-tools, .search { width: 100%; }
+      .form-grid { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+      .item-entry { grid-template-columns: 1fr 70px; }
+      .item-entry button { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand"><div class="brand-mark">ϟ</div><div><strong>voltz</strong><small>gestão de oficina</small></div></div>
+      <div class="nav-label">Menu principal</div>
+      <nav id="navigation" aria-label="Menu principal"></nav>
+      <p class="sidebar-note">Seus dados ficam salvos neste navegador. Faça cópias de segurança periódicas.</p>
+    </aside>
+    <main>
+      <header><div><div class="header-title">Oficina elétrica automotiva</div><div class="header-subtitle">Organize seus atendimentos em um só lugar</div></div><div class="user-badge" title="Administrador">AD</div></header>
+      <section id="content" aria-live="polite"></section>
+    </main>
+  </div>
+  <dialog id="editor"><div id="editor-content"></div></dialog>
+  <div id="toast" role="status"></div>
+  <script>
+    const STORE_KEY = "voltz-workshop-v1";
+    const sections = {
+      dashboard: { label: "Visão geral", icon: "⌂" },
+      clients: { label: "Clientes", icon: "♙" },
+      suppliers: { label: "Fornecedores", icon: "▤" },
+      catalog: { label: "Produtos e serviços", icon: "▦" },
+      vehicles: { label: "Veículos", icon: "▱" },
+      orders: { label: "Ordens de serviço", icon: "☷" }
+    };
+    const emptyData = () => ({ clients: [], suppliers: [], catalog: [], vehicles: [], orders: [] });
+    let data = loadData();
+    let currentSection = "dashboard";
+    let orderLines = [];
+    let toastTimer;
+
+    function loadData() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORE_KEY));
+        if (saved && typeof saved === "object") {
+          const base = emptyData();
+          for (const key of Object.keys(base)) base[key] = Array.isArray(saved[key]) ? saved[key] : [];
+          return base;
+        }
+      } catch (error) {
+        console.warn("Não foi possível ler os dados salvos.", error);
+      }
+      return emptyData();
+    }
+
+    function saveData() {
+      try {
+        localStorage.setItem(STORE_KEY, JSON.stringify(data));
+      } catch (error) {
+        showToast("Não foi possível salvar. Verifique o espaço do navegador.");
+        throw error;
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[char]);
+    }
+
+    function money(value) {
+      return Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function id() {
+      return globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    }
+
+    function showToast(message) {
+      const toast = document.querySelector("#toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+    }
+
+    function personName(collection, personId) {
+      return data[collection].find(item => item.id === personId)?.name || "—";
+    }
+
+    function vehicleName(vehicleId) {
+      const vehicle = data.vehicles.find(item => item.id === vehicleId);
+      return vehicle ? `${vehicle.plate} · ${vehicle.model}` : "—";
+    }
+
+    function orderTotal(order) {
+      return (order.items || []).reduce((total, item) => total + Number(item.quantity) * Number(item.unitPrice), 0);
+    }
+
+    function orderProfit(order) {
+      return (order.items || []).reduce((total, item) => total + Number(item.quantity) * (Number(item.unitPrice) - Number(item.unitCost || 0)), 0);
+    }
+
+    function renderNavigation() {
+      document.querySelector("#navigation").innerHTML = Object.entries(sections).map(([key, section]) =>
+        `<button class="nav-link ${key === currentSection ? "active" : ""}" data-section="${key}"><span class="nav-icon">${section.icon}</span>${section.label}</button>`
+      ).join("");
+    }
+
+    function pageHeader(title, description, buttonLabel, entity) {
+      return `<div class="page-heading"><div><h1>${title}</h1><div class="page-description">${description}</div></div>${buttonLabel ? `<button class="button primary" data-add="${entity}">＋ ${buttonLabel}</button>` : ""}</div>`;
+    }
+
+    function tablePanel(title, searchHint, headers, rows, emptyMessage) {
+      return `<div class="panel"><div class="panel-heading"><h2>${title}</h2><div class="table-tools"><input class="search" type="search" placeholder="${searchHint}" aria-label="${searchHint}" data-search></div></div><div class="table-wrap"><table><thead><tr>${headers.map(header => `<th>${header}</th>`).join("")}</tr></thead><tbody>${rows || `<tr><td class="empty" colspan="${headers.length}">${emptyMessage}</td></tr>`}</tbody></table></div></div>`;
+    }
+
+    function actionButtons(entity, itemId) {
+      return `<div class="actions"><button class="button small" data-edit="${entity}" data-id="${escapeHtml(itemId)}">Editar</button><button class="button small danger" data-delete="${entity}" data-id="${escapeHtml(itemId)}">Excluir</button></div>`;
+    }
+
+    function renderDashboard() {
+      const openOrders = data.orders.filter(order => order.status !== "Concluída" && order.status !== "Cancelada");
+      const revenue = data.orders.filter(order => order.status === "Concluída").reduce((sum, order) => sum + orderTotal(order), 0);
+      const profit = data.orders.filter(order => order.status === "Concluída").reduce((sum, order) => sum + orderProfit(order), 0);
+      const cards = [
+        ["Ordens em aberto", openOrders.length, "Aguardando ou em andamento"],
+        ["Clientes", data.clients.length, "Clientes cadastrados"],
+        ["Veículos", data.vehicles.length, "Veículos cadastrados"],
+        ["Vendas concluídas", money(revenue), `Lucro estimado: ${money(profit)}`]
+      ].map(([label, value, foot]) => `<article class="card"><div class="card-label">${label}</div><div class="card-value">${value}</div><div class="card-foot">${foot}</div></article>`).join("");
+      const recent = [...data.orders].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5).map(order =>
+        `<tr><td><strong>${escapeHtml(order.number)}</strong></td><td>${escapeHtml(personName("clients", order.clientId))}</td><td>${escapeHtml(vehicleName(order.vehicleId))}</td><td><span class="status ${statusClass(order.status)}">${escapeHtml(order.status)}</span></td><td>${money(orderTotal(order))}</td></tr>`
+      ).join("");
+      return `${pageHeader("Visão geral", "Resumo da sua oficina", "", "")}<div class="cards">${cards}</div>${tablePanel("Ordens recentes", "Buscar ordem...", ["Ordem", "Cliente", "Veículo", "Status", "Total"], recent, "Nenhuma ordem de serviço cadastrada ainda.")}`;
+    }
+
+    function statusClass(status) {
+      return String(status || "").toLowerCase().replaceAll(" ", "-");
+    }
+
+    function renderClients() {
+      const rows = data.clients.map(item => `<tr><td><strong>${escapeHtml(item.name)}</strong></td><td>${escapeHtml(item.phone || "—")}</td><td>${escapeHtml(item.email || "—")}</td><td>${escapeHtml(item.document || "—")}</td><td>${actionButtons("clients", item.id)}</td></tr>`).join("");
+      return `${pageHeader("Clientes", "Cadastro e contato dos clientes da oficina", "Novo cliente", "clients")}${tablePanel("Todos os clientes", "Buscar cliente...", ["Nome", "Telefone", "E-mail", "CPF / documento", "Ações"], rows, "Nenhum cliente cadastrado. Use “Novo cliente” para começar.")}`;
+    }
+
+    function renderSuppliers() {
+      const rows = data.suppliers.map(item => `<tr><td><strong>${escapeHtml(item.name)}</strong></td><td>${escapeHtml(item.phone || "—")}</td><td>${escapeHtml(item.email || "—")}</td><td>${escapeHtml(item.document || "—")}</td><td>${actionButtons("suppliers", item.id)}</td></tr>`).join("");
+      return `${pageHeader("Fornecedores", "Contatos e dados dos seus fornecedores", "Novo fornecedor", "suppliers")}${tablePanel("Todos os fornecedores", "Buscar fornecedor...", ["Nome / empresa", "Telefone", "E-mail", "CNPJ / documento", "Ações"], rows, "Nenhum fornecedor cadastrado.")}`;
+    }
+
+    function renderCatalog() {
+      const rows = data.catalog.map(item => `<tr><td><strong>${escapeHtml(item.name)}</strong></td><td>${item.type === "Produto" ? "Produto" : "Serviço"}</td><td>${item.type === "Produto" ? money(item.cost) : "—"}</td><td>${money(item.price)}</td><td class="profit">${item.type === "Produto" ? money(Number(item.price) - Number(item.cost)) : "—"}</td><td>${item.type === "Produto" ? escapeHtml(item.stock || 0) : "—"}</td><td>${actionButtons("catalog", item.id)}</td></tr>`).join("");
+      return `${pageHeader("Produtos e serviços", "Cadastre produtos e serviços em um único catálogo", "Novo item", "catalog")}${tablePanel("Catálogo da oficina", "Buscar produto ou serviço...", ["Descrição", "Tipo", "Custo", "Preço de venda", "Lucro unitário", "Estoque", "Ações"], rows, "Seu catálogo ainda está vazio.")}<p class="notice">O lucro unitário de produtos é calculado pela diferença entre preço de venda e custo. Valores são estimativas e não incluem outras despesas da oficina.</p>`;
+    }
+
+    function renderVehicles() {
+      const rows = data.vehicles.map(item => `<tr><td><strong>${escapeHtml(item.plate)}</strong></td><td>${escapeHtml(item.brand || "—")} ${escapeHtml(item.model)}</td><td>${escapeHtml(item.type || "—")}</td><td>${escapeHtml(item.year || "—")}</td><td>${escapeHtml(personName("clients", item.clientId))}</td><td>${actionButtons("vehicles", item.id)}</td></tr>`).join("");
+      return `${pageHeader("Veículos", "Veículos vinculados aos clientes", "Novo veículo", "vehicles")}${tablePanel("Veículos cadastrados", "Buscar placa, modelo ou cliente...", ["Placa", "Marca e modelo", "Tipo", "Ano", "Proprietário", "Ações"], rows, "Nenhum veículo cadastrado.")}`;
+    }
+
+    function renderOrders() {
+      const rows = [...data.orders].sort((a, b) => b.date.localeCompare(a.date)).map(item => `<tr><td><strong>${escapeHtml(item.number)}</strong></td><td>${escapeHtml(item.date)}</td><td>${escapeHtml(personName("clients", item.clientId))}</td><td>${escapeHtml(vehicleName(item.vehicleId))}</td><td><span class="status ${statusClass(item.status)}">${escapeHtml(item.status)}</span></td><td>${money(orderTotal(item))}</td><td class="profit">${money(orderProfit(item))}</td><td>${actionButtons("orders", item.id)}</td></tr>`).join("");
+      return `${pageHeader("Ordens de serviço", "Acompanhe atendimentos, peças, serviços e valores", "Nova ordem", "orders")}${tablePanel("Todas as ordens", "Buscar ordem, cliente ou veículo...", ["Nº OS", "Data", "Cliente", "Veículo", "Status", "Total", "Lucro estimado", "Ações"], rows, "Nenhuma ordem de serviço cadastrada.")}<p class="notice">O lucro estimado considera a diferença entre venda e custo dos itens lançados. Serviços sem custo informado contam integralmente como margem.</p>`;
+    }
+
+    function render() {
+      renderNavigation();
+      const views = { dashboard: renderDashboard, clients: renderClients, suppliers: renderSuppliers, catalog: renderCatalog, vehicles: renderVehicles, orders: renderOrders };
+      document.querySelector("#content").innerHTML = views[currentSection]();
+    }
+
+    function field(name, label, type = "text", value = "", options = {}) {
+      const full = options.full ? " full" : "";
+      const required = options.required ? " required" : "";
+      const step = options.step ? ` step="${options.step}"` : "";
+      const placeholder = options.placeholder ? ` placeholder="${escapeHtml(options.placeholder)}"` : "";
+      if (type === "select") {
+        const choices = options.choices || [];
+        return `<div class="field${full}"><label for="field-${name}">${label}</label><select id="field-${name}" name="${name}"${required}>${choices.map(([choice, text]) => `<option value="${escapeHtml(choice)}" ${String(value) === String(choice) ? "selected" : ""}>${escapeHtml(text)}</option>`).join("")}</select></div>`;
+      }
+      if (type === "textarea") return `<div class="field${full}"><label for="field-${name}">${label}</label><textarea id="field-${name}" name="${name}"${placeholder}>${escapeHtml(value)}</textarea></div>`;
+      return `<div class="field${full}"><label for="field-${name}">${label}</label><input id="field-${name}" name="${name}" type="${type}" value="${escapeHtml(value)}"${step}${placeholder}${required}></div>`;
+    }
+
+    function choices(collection, emptyLabel) {
+      return [["", emptyLabel], ...data[collection].map(item => [item.id, item.name])];
+    }
+
+    function showEditor(entity, existing = null) {
+      const item = existing || {};
+      const config = {
+        clients: ["Cliente", [field("name", "Nome completo", "text", item.name, { required: true, full: true }), field("phone", "Telefone / WhatsApp", "tel", item.phone), field("email", "E-mail", "email", item.email), field("document", "CPF / documento", "text", item.document), field("notes", "Observações", "textarea", item.notes, { full: true })]],
+        suppliers: ["Fornecedor", [field("name", "Nome / empresa", "text", item.name, { required: true, full: true }), field("phone", "Telefone", "tel", item.phone), field("email", "E-mail", "email", item.email), field("document", "CNPJ / documento", "text", item.document), field("notes", "Observações", "textarea", item.notes, { full: true })]],
+        catalog: ["Item do catálogo", [field("name", "Descrição", "text", item.name, { required: true, full: true }), field("type", "Tipo", "select", item.type || "Produto", { choices: [["Produto", "Produto"], ["Serviço", "Serviço"]] }), field("supplierId", "Fornecedor", "select", item.supplierId || "", { choices: choices("suppliers", "Sem fornecedor") }), field("cost", "Preço de custo (R$)", "number", item.cost ?? 0, { step: "0.01" }), field("price", "Preço de venda (R$)", "number", item.price ?? 0, { step: "0.01", required: true }), field("stock", "Estoque", "number", item.stock ?? 0, { step: "1" })]],
+        vehicles: ["Veículo", [field("clientId", "Proprietário", "select", item.clientId || "", { choices: choices("clients", "Selecione o cliente"), required: true }), field("plate", "Placa", "text", item.plate, { required: true }), field("brand", "Marca", "text", item.brand), field("model", "Modelo", "text", item.model, { required: true }), field("year", "Ano", "number", item.year, { step: "1" }), field("type", "Tipo de veículo", "select", item.type || "Automóvel", { choices: [["Automóvel", "Automóvel"], ["Motocicleta", "Motocicleta"], ["Caminhão", "Caminhão"], ["Van", "Van"], ["Ônibus", "Ônibus"], ["Outro", "Outro"]] }), field("notes", "Observações", "textarea", item.notes, { full: true })]],
+        orders: ["Ordem de serviço", [field("date", "Data de entrada", "date", item.date || new Date().toISOString().slice(0, 10), { required: true }), field("status", "Status", "select", item.status || "Aberta", { choices: [["Aberta", "Aberta"], ["Em andamento", "Em andamento"], ["Concluída", "Concluída"], ["Cancelada", "Cancelada"]] }), field("clientId", "Cliente", "select", item.clientId || "", { choices: choices("clients", "Selecione o cliente"), required: true }), field("vehicleId", "Veículo", "select", item.vehicleId || "", { choices: choices("vehicles", "Selecione o veículo"), required: true }), field("complaint", "Problema relatado", "textarea", item.complaint, { full: true }), field("diagnosis", "Diagnóstico / serviço realizado", "textarea", item.diagnosis, { full: true })]]
+      }[entity];
+      if (!config) return;
+      if (entity === "orders" && (!data.clients.length || !data.vehicles.length)) {
+        showToast("Cadastre primeiro um cliente e um veículo.");
+        return;
+      }
+      orderLines = entity === "orders" ? (item.items || []).map(line => ({ ...line })) : [];
+      const orderFields = entity === "orders" ? `<div class="field full"><label>Peças e serviços</label><div class="item-entry"><select id="catalog-item" aria-label="Produto ou serviço">${choices("catalog", "Selecione um item").map(([value, text]) => `<option value="${escapeHtml(value)}">${escapeHtml(text)}</option>`).join("")}</select><input id="item-quantity" type="number" min="1" value="1" aria-label="Quantidade"><button class="button" type="button" id="add-order-item">Adicionar</button></div><div id="order-lines" class="order-lines"></div></div>` : "";
+      document.querySelector("#editor-content").innerHTML = `<div class="dialog-header"><h2>${item.id ? "Editar" : "Novo"} ${config[0].toLowerCase()}</h2><button class="close" type="button" aria-label="Fechar" data-close>×</button></div><form id="record-form" data-entity="${entity}" data-id="${escapeHtml(item.id || "")}"><div class="dialog-body"><div class="form-grid">${config[1].join("")}${orderFields}</div><div class="form-actions"><button class="button" type="button" data-close>Cancelar</button><button class="button primary" type="submit">Salvar</button></div></div></form>`;
+      if (entity === "orders") {
+        document.querySelector("#add-order-item").addEventListener("click", addOrderLine);
+        renderOrderLines();
+      }
+      document.querySelector("#editor").showModal();
+    }
+
+    function addOrderLine() {
+      const selectedId = document.querySelector("#catalog-item").value;
+      const quantity = Number(document.querySelector("#item-quantity").value);
+      const catalogItem = data.catalog.find(item => item.id === selectedId);
+      if (!catalogItem || !Number.isInteger(quantity) || quantity < 1) {
+        showToast("Selecione um item e informe uma quantidade válida.");
+        return;
+      }
+      const existing = orderLines.find(line => line.catalogId === catalogItem.id);
+      if (existing) existing.quantity += quantity;
+      else orderLines.push({ catalogId: catalogItem.id, name: catalogItem.name, type: catalogItem.type, quantity, unitPrice: Number(catalogItem.price), unitCost: Number(catalogItem.cost || 0) });
+      renderOrderLines();
+    }
+
+    function renderOrderLines() {
+      const target = document.querySelector("#order-lines");
+      if (!target) return;
+      target.innerHTML = orderLines.length ? orderLines.map((line, index) => `<div class="order-line"><span>${escapeHtml(line.name)} × ${line.quantity} · ${money(line.unitPrice)} un.</span><span>${money(line.quantity * line.unitPrice)} <button class="button small danger" type="button" data-remove-line="${index}" aria-label="Remover ${escapeHtml(line.name)}">×</button></span></div>`).join("") + `<div class="order-total">Total: ${money(orderLines.reduce((sum, line) => sum + line.quantity * line.unitPrice, 0))}</div>` : `<div class="empty">Adicione os itens que serão usados nesta ordem.</div>`;
+      target.querySelectorAll("[data-remove-line]").forEach(button => button.addEventListener("click", () => {
+        orderLines.splice(Number(button.dataset.removeLine), 1);
+        renderOrderLines();
+      }));
+    }
+
+    function handleSubmit(form) {
+      const entity = form.dataset.entity;
+      const formData = new FormData(form);
+      const record = Object.fromEntries(formData.entries());
+      const existingIndex = data[entity].findIndex(item => item.id === form.dataset.id);
+      if (entity === "catalog") {
+        record.cost = Number(record.cost || 0);
+        record.price = Number(record.price || 0);
+        record.stock = Math.max(0, Number(record.stock || 0));
+        if (record.type === "Serviço") record.stock = 0;
+      }
+      if (entity === "vehicles") record.year = record.year ? Number(record.year) : "";
+      if (entity === "orders") {
+        if (!orderLines.length) {
+          showToast("Adicione ao menos um produto ou serviço à ordem.");
+          return;
+        }
+        const vehicle = data.vehicles.find(item => item.id === record.vehicleId);
+        if (!vehicle || vehicle.clientId !== record.clientId) {
+          showToast("Selecione um veículo que pertença ao cliente informado.");
+          return;
+        }
+        record.items = orderLines;
+        record.number = existingIndex >= 0 ? data.orders[existingIndex].number : `OS-${String(Date.now()).slice(-6)}`;
+      }
+      if (existingIndex >= 0) data[entity][existingIndex] = { ...data[entity][existingIndex], ...record };
+      else data[entity].push({ id: id(), ...record });
+      try {
+        saveData();
+      } catch (error) {
+        return;
+      }
+      document.querySelector("#editor").close();
+      render();
+      showToast("Cadastro salvo com sucesso.");
+    }
+
+    document.addEventListener("click", event => {
+      const nav = event.target.closest("[data-section]");
+      if (nav) {
+        currentSection = nav.dataset.section;
+        render();
+        return;
+      }
+      const add = event.target.closest("[data-add]");
+      if (add) {
+        showEditor(add.dataset.add);
+        return;
+      }
+      const edit = event.target.closest("[data-edit]");
+      if (edit) {
+        const record = data[edit.dataset.edit].find(item => item.id === edit.dataset.id);
+        if (record) showEditor(edit.dataset.edit, record);
+        return;
+      }
+      const remove = event.target.closest("[data-delete]");
+      if (remove) {
+        const { delete: entity, id: recordId } = remove.dataset;
+        if (!confirm("Deseja excluir este cadastro?")) return;
+        data[entity] = data[entity].filter(item => item.id !== recordId);
+        try {
+          saveData();
+          render();
+          showToast("Cadastro excluído.");
+        } catch (error) {}
+        return;
+      }
+      if (event.target.closest("[data-close]")) document.querySelector("#editor").close();
+    });
+
+    document.addEventListener("submit", event => {
+      if (event.target.id !== "record-form") return;
+      event.preventDefault();
+      handleSubmit(event.target);
+    });
+
+    document.addEventListener("input", event => {
+      if (!event.target.matches("[data-search]")) return;
+      const query = event.target.value.toLocaleLowerCase("pt-BR");
+      const rows = document.querySelectorAll("#content tbody tr");
+      rows.forEach(row => row.hidden = !row.textContent.toLocaleLowerCase("pt-BR").includes(query));
+    });
+
+    render();
+  </script>
+</body>
+</html>
